@@ -1,0 +1,56 @@
+# 进程间的通讯
+from asyncio import Queue
+from multiprocessing import Process
+from time import sleep
+
+
+
+
+def download(q):
+    images = ['a.jpg', 'c.jpg', 'b.jpg', 'e.jpg', 'f.jpg']
+    for i in images:
+        print('正在下载{}...'.format(i))
+        q.put(i)
+        sleep(1)
+
+
+def save(q):
+    while True:
+        try:
+            file = q.get(timeout=3)
+            print('{}保存成功！'.format(file))
+        except:
+            print('保存完毕！')
+            break
+
+
+if __name__ == '__main__':
+    q = Queue(5)
+    p1 = Process(target=download, args=(q,))
+    p2 = Process(target=save, args=(q,))
+
+    p1.start()
+    p1.join()  # 意思是等我download完了你再save
+
+    p2.start()
+    p2.join()  # 等我save完了主线程再进行print
+
+    print('==========================')
+    
+    
+    
+#执行时报错了
+Traceback (most recent call last):
+  File "E:/Python 项目/python01/Processes_muti/process07_queue02.py", line 35, in <module>
+    p2.start()
+  File "E:\python3.6.5\lib\multiprocessing\process.py", line 105, in start
+    self._popen = self._Popen(self)
+  File "E:\python3.6.5\lib\multiprocessing\context.py", line 223, in _Popen
+    return _default_context.get_context().Process._Popen(process_obj)
+  File "E:\python3.6.5\lib\multiprocessing\context.py", line 322, in _Popen
+    return Popen(process_obj)
+  File "E:\python3.6.5\lib\multiprocessing\popen_spawn_win32.py", line 65, in __init__
+    reduction.dump(process_obj, to_child)
+  File "E:\python3.6.5\lib\multiprocessing\reduction.py", line 60, in dump
+    ForkingPickler(file, protocol).dump(obj)
+AttributeError: Can't pickle local object 'WeakSet.__init__.<locals>._remove'
