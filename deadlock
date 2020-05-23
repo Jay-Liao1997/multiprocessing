@@ -1,0 +1,40 @@
+# 自定义线程 死锁
+# 解决死锁的方法： acquire(timeout = secs) 等待secs秒，还没拿到锁，就放弃了
+from threading import Thread, Lock
+from time import sleep
+
+lockA = Lock()
+lockB = Lock()
+
+
+class MyThread1(Thread):
+    def task1(self):
+        if lockA.acquire():
+            print(self.name + '拿到了A锁。')
+            sleep(0.5)
+            if lockB.acquire(timeout=3):
+                print(self.name + '获得了B锁，同时拥有A锁。')
+                lockB.release()
+            lockA.release()
+
+
+class MyThread2(Thread):
+    def task2(self):
+        if lockB.acquire():
+            print(self.name + '拿到了B锁。')
+            sleep(0.5)
+            if lockA.acquire(timeout=3):
+                print(self.name + '获得了A锁，同时拥有B锁。')
+                lockA.release()
+            lockB.release()
+
+
+if __name__ == '__main__':
+    t1 = MyThread1()
+    t2 = MyThread2()
+    print("---")
+    t1.start()
+    t2.start()
+
+
+#问题：执行之后既没有报错，也没有任何输出，直接借结束了
