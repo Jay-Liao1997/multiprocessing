@@ -1,0 +1,56 @@
+# 协程 使用gevent实现 猴子补丁 monkey
+import gevent
+from time import sleep
+from gevent import monkey
+monkey.patch_all(thread=False)
+
+def A():
+    for i in range(5):
+        print('A+', str(i))
+        gb.switch()
+        sleep(0.5)
+
+
+def B():
+    for i in range(5):
+        print('B+', str(i))
+        gc.switch()
+        sleep(0.5)
+
+
+def C():
+    for i in range(5):
+        print('C+', str(i))
+        ga.switch()
+        sleep(0.5)
+
+
+if __name__ == '__main__':
+    ga = gevent.spawn(A)
+    gb = gevent.spawn(B)
+    gc = gevent.spawn(C)
+
+
+    ga.join()
+    # gb.join()
+    # gc.join()
+    #如果把下面两个join()都开启，程序会报错，具体原因还不懂
+
+'''
+Traceback (most recent call last):
+  File "E:/Python 项目/python01/xiecheng/xiecheng03.py", line 35, in <module>
+    gb.join()
+  File "src\gevent\greenlet.py", line 797, in gevent._greenlet.Greenlet.join
+  File "src\gevent\greenlet.py", line 823, in gevent._greenlet.Greenlet.join
+  File "src\gevent\greenlet.py", line 812, in gevent._greenlet.Greenlet.join
+  File "src\gevent\_greenlet_primitives.py", line 61, in gevent.__greenlet_primitives.SwitchOutGreenletWithLoop.switch
+  File "src\gevent\_greenlet_primitives.py", line 61, in gevent.__greenlet_primitives.SwitchOutGreenletWithLoop.switch
+  File "src\gevent\_greenlet_primitives.py", line 65, in gevent.__greenlet_primitives.SwitchOutGreenletWithLoop.switch
+  File "src\gevent\__greenlet_primitives.pxd", line 35, in gevent.__greenlet_primitives._greenlet_switch
+gevent.exceptions.LoopExit: This operation would block forever
+	Hub: <Hub '' at 0x2556de57cc0 backend=default ptr=<cdata 'struct uv_loop_s *' 0x00007FF8DC98BF80> default pending=0 ref=0 thread_ident=0x186c>
+	Handles:
+[HandleState(handle=<cdata 'struct uv_handle_s *' 0x000002556D8D2698>, type=b'check', watcher=<gevent.libuv.loop.loop at 0x2556d893128 backend=default ptr=<cdata 'struct uv_loop_s *' 0x00007FF8DC98BF80> default pending=0 ref=0>, ref=0, active=1, closing=0),
+ HandleState(handle=<cdata 'struct uv_handle_s *' 0x000002556BAA5408>, type=b'timer', watcher=<gevent.libuv.loop.loop at 0x2556d893128 backend=default ptr=<cdata 'struct uv_loop_s *' 0x00007FF8DC98BF80> default pending=0 ref=0>, ref=0, active=1, closing=0),
+ HandleState(handle=<cdata 'struct uv_handle_s *' 0x000002556E318828>, type=b'prepare', watcher=<gevent.libuv.loop.loop at 0x2556d893128 backend=default ptr=<cdata 'struct uv_loop_s *' 0x00007FF8DC98BF80> default pending=0 ref=0>, ref=0, active=1, closing=0),
+ HandleState(handle=<cdata 'struct uv_handle_s *' 0x000002556E317BC8>, type=b'check', watcher=<gevent.libuv.loop.loop at 0x2556d893128 backend=default ptr=<cdata
